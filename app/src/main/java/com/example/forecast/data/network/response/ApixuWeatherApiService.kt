@@ -1,3 +1,4 @@
+import com.example.forecast.data.network.response.ConnectivityInterceptor
 import com.example.forecast.data.network.response.CurrentWeatherResponse
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import kotlinx.coroutines.Deferred
@@ -9,15 +10,14 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 //http://api.weatherapi.com/v1/current.json?key=18b8120a714e4b7dbc6185804201306&q=London
 const val API_KEY = "18b8120a714e4b7dbc6185804201306"
-private const val BASE_URL = "http://api.weatherstack.com/"
 
 
-interface ApixuWeatherApiService{
+public interface ApixuWeatherApiService{
 
     @GET("current.json")
     fun getCurrentWeather(@Query("q") location: String): Deferred<CurrentWeatherResponse>
     companion object {
-        operator fun invoke(): ApixuWeatherApiService {
+        operator fun invoke(connectivityInterceptor: ConnectivityInterceptor): ApixuWeatherApiService {
             val requestInterceptor=Interceptor { chain ->
                 val url = chain.request()
                     .url()
@@ -32,6 +32,7 @@ interface ApixuWeatherApiService{
             }
             val okHttpClient = OkHttpClient.Builder()
                 .addInterceptor(requestInterceptor)
+                .addInterceptor(connectivityInterceptor)
                 .build()
             return Retrofit.Builder()
                 .client(okHttpClient)
